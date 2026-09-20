@@ -5934,8 +5934,7 @@ function saRenderAppFeedback(){
             ${replyHtml}
             <div class="fb-actions">
                 <button onclick="openSaFeedbackReplyModal('${f.id}')">${f.reply ? '✏️ Edit Reply' : '💬 Reply'}</button>
-                <button class="danger" onclick="saDeleteFeedback('${f.id}')">🗑 Delete</button>
-
+                ${f.reply ? `<button class="danger" onclick="saDeleteFeedbackReply('${f.id}')">🗑 Delete Reply</button>` : ''}
             </div>
         </div>`;
     }).join('');
@@ -5962,9 +5961,11 @@ function saSubmitFeedbackReply(){
     closeSaFeedbackReplyModal();
     saRenderAppFeedback();
 }
-function saDeleteFeedback(feedbackId){
-    if (!confirm('Delete this feedback permanently? This cannot be undone.')) return;
-    const list = saGetAppFeedback().filter(f => f.id !== feedbackId);
+function saDeleteFeedbackReply(feedbackId){
+    if (!confirm('Delete this reply? The feedback itself will stay — only your reply to it will be removed.')) return;
+    const list = saGetAppFeedback();
+    const entry = list.find(f => f.id === feedbackId);
+    if (entry) entry.reply = null;
     saSaveAppFeedback(list);
     saRenderAppFeedback();
 }
