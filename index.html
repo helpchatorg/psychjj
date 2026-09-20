@@ -252,6 +252,10 @@
     /* ===== QUERY GUIDE BOOK ===== */
     #sa-guidebook-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.55);backdrop-filter:blur(6px);z-index:8000;padding:16px;box-sizing:border-box;overflow-y:auto;-webkit-overflow-scrolling:touch;}
     #sa-guidebook-page.open{display:block;}
+    #sa-feedback-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.55);backdrop-filter:blur(6px);z-index:8000;padding:16px;box-sizing:border-box;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    #sa-feedback-page.open{display:block;}
+    #sa-feedback-reply-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.55);backdrop-filter:blur(6px);z-index:8500;padding:20px;box-sizing:border-box;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+    #sa-feedback-reply-modal.open{display:flex;}
     .gb-card-wrap{background:var(--bg2);border-radius:24px;max-width:820px;margin:0 auto 30px;box-shadow:0 25px 60px rgba(0,0,0,0.22);overflow:hidden;animation:card-in .3s ease both;}
     .gb-header{background:linear-gradient(135deg,#4338ca,#4f46e5,#6366f1);padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;color:#fff;}
     .gb-header h2{margin:0;font-size:1.15rem;}
@@ -379,6 +383,47 @@
     }
     .day-chip input:active + span { transform: scale(0.94); }
     .day-chip input:focus-visible + span { outline: 2px solid var(--primary-dark); outline-offset: 2px; }
+
+    /* ===== FEEDBACK — MODERN DESIGN (matches Admin/Student app) ===== */
+    .fb-icon-badge {
+        width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 10px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+        display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+    }
+    .fb-card {
+        background: var(--bg); border: 1px solid var(--border); border-radius: 16px;
+        padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+        border-left: 4px solid #a5b4fc;
+    }
+    .fb-card.role-student { border-left-color: #6366f1; }
+    .fb-card.role-admin { border-left-color: #f59e0b; }
+    .fb-card.role-outsider { border-left-color: #64748b; }
+    .fb-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .fb-avatar {
+        width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.9rem; color: #fff;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .fb-card-top .meta { flex: 1; min-width: 0; }
+    .fb-card-top .meta .nm { font-weight: 800; font-size: 0.85rem; color: var(--dark); display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .fb-card-top .meta .sub { font-size: 0.7rem; color: var(--grey); margin-top: 1px; }
+    .fb-card-top .dt { font-size: 0.66rem; color: var(--grey); white-space: nowrap; }
+    .fb-stars-line { color: #f59e0b; font-size: 0.95rem; margin-bottom: 6px; letter-spacing: 1px; }
+    .fb-msg { font-size: 0.82rem; color: var(--dark); line-height: 1.55; white-space: pre-wrap; }
+    .fb-reply-bubble {
+        background: linear-gradient(135deg, #eef2ff, #f5f3ff); border-radius: 12px;
+        padding: 10px 12px; margin-top: 10px; font-size: 0.78rem; color: #4338ca; line-height: 1.5;
+    }
+    .fb-reply-pending { font-size: 0.72rem; color: var(--grey); margin-top: 8px; font-style: italic; }
+    .fb-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .fb-actions button {
+        background: #eef2ff; color: var(--primary-dark); border: 1px solid #c7d2fe;
+        padding: 7px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 800;
+        width: auto; margin: 0; box-shadow: none; cursor: pointer;
+    }
+    .fb-actions button.danger { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
     .admin-menu-notif-dot {
         display: none; width: 10px; height: 10px; background: #dc2626; border-radius: 50%;
         border: 2px solid #fff; animation: pulse-dot 1.5s ease-in-out infinite;
@@ -468,7 +513,8 @@
             </div>
         </div>
         <div class="sa-top-actions">
-            <button class="sa-menu-btn" id="sa-guidebook-topbtn" onclick="openSaGuideBook()" title="Query Guide Book" style="position:relative;">📖<span class="admin-menu-notif-dot" id="sa-guidebook-topbtn-dot" style="display:none; position:absolute; top:2px; right:2px; width:8px; height:8px;"></span></button>
+            <button class="sa-menu-btn" id="sa-feedback-topbtn" onclick="openSaFeedbackPage()" title="Feedback" style="position:relative;">💬<span class="admin-menu-notif-dot" id="sa-feedback-topbtn-dot" style="display:none; position:absolute; top:2px; right:2px; width:8px; height:8px;"></span></button>
+            <button class="sa-menu-btn" id="sa-guidebook-topbtn" onclick="openSaGuideBook()" title="Query Guide Book">📖</button>
             <button class="sa-menu-btn" id="sa-menu-btn" onclick="toggleSaMenu()">☰</button>
             <div class="sa-menu-dropdown" id="sa-menu-dropdown">
                 <div class="sa-menu-item" onclick="closeSaMenu(); openSaSecurityCodePage();">🛡 Security Code</div>
@@ -599,40 +645,64 @@
 </div>
 
 <!-- ===== TICKET RESTRICTION DETAIL MODAL ===== -->
+<!-- ===== APP / WEBSITE FEEDBACK PAGE (standalone — separate from the Query Guide Book) ===== -->
+<div id="sa-feedback-page">
+    <div class="gb-card-wrap">
+        <div class="gb-header">
+            <div>
+                <h2>💬 Feedback</h2>
+                <p>Feedback submitted by Admins and Students about the app or website itself, from every library, newest first — updates live while this page is open</p>
+            </div>
+            <button class="gb-close-btn" onclick="closeSaFeedbackPage()">✕ Close</button>
+        </div>
+        <div class="gb-body">
+            <div class="gb-stats-row">
+                <span class="gb-count" id="sa-feedback-count-text">0 feedback entries</span>
+            </div>
+            <div class="gb-list" id="sa-feedback-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FEEDBACK REPLY MODAL ===== -->
+<div id="sa-feedback-reply-modal">
+    <div class="cp-modal-card">
+        <div class="cp-modal-header">
+            <h3>💬 Reply to Feedback</h3>
+            <button class="cp-close-btn" onclick="closeSaFeedbackReplyModal()">✕ Close</button>
+        </div>
+        <div class="cp-modal-body">
+            <div class="fb-icon-badge">💬</div>
+            <div class="input-group">
+                <label>Your Reply</label>
+                <textarea id="sa-feedback-reply-text" rows="5" placeholder="Write your reply — the Admin or Student will see this against their feedback."></textarea>
+            </div>
+            <button onclick="saSubmitFeedbackReply()" style="background:#1e293b; color:#fff; width:100%; padding:12px;">Send Reply 🚀</button>
+        </div>
+    </div>
+</div>
+
 <!-- ===== QUERY GUIDE BOOK PAGE ===== -->
 <div id="sa-guidebook-page">
     <div class="gb-card-wrap">
         <div class="gb-header">
             <div>
-                <h2 id="gb-page-title">📖 Query Guide Book</h2>
-                <p id="gb-page-subtitle">Every query's ID, keywords, problem, and step-by-step resolution — all in one place</p>
+                <h2>📖 Query Guide Book</h2>
+                <p>Every query's ID, keywords, problem, and step-by-step resolution — all in one place</p>
             </div>
             <button class="gb-close-btn" onclick="closeSaGuideBook()">✕ Close</button>
         </div>
         <div class="gb-body">
-            <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:2px solid var(--border);">
-                <button type="button" id="gb-tab-btn-guide" onclick="gbSwitchPageTab('guide')" style="flex:1; background:transparent; border:none; border-bottom:3px solid var(--primary); color:var(--primary); font-weight:800; padding:10px 4px; width:auto; margin:0; box-shadow:none;">📖 Guide Book</button>
-                <button type="button" id="gb-tab-btn-feedback" onclick="gbSwitchPageTab('feedback')" style="flex:1; background:transparent; border:none; border-bottom:3px solid transparent; color:var(--grey); font-weight:800; padding:10px 4px; width:auto; margin:0; box-shadow:none; position:relative;">💬 App Feedback<span class="admin-menu-notif-dot" id="gb-feedback-notif-dot" style="display:none; position:absolute; top:2px; right:-4px;"></span></button>
+            <button class="gb-analytics-btn-full" onclick="gbOpenAnalytics()">📊 View Analytics (Resolved / Unresolved)</button>
+            <div class="gb-search-row">
+                <input type="text" id="gb-search-input" placeholder="🔍 Search by Query ID, keyword, or problem..." oninput="gbRender()">
+                <select id="gb-cat-filter" onchange="gbRender()"><option value="">All Categories</option></select>
             </div>
-            <div id="gb-guide-panel">
-                <button class="gb-analytics-btn-full" onclick="gbOpenAnalytics()">📊 View Analytics (Resolved / Unresolved)</button>
-                <div class="gb-search-row">
-                    <input type="text" id="gb-search-input" placeholder="🔍 Search by Query ID, keyword, or problem..." oninput="gbRender()">
-                    <select id="gb-cat-filter" onchange="gbRender()"><option value="">All Categories</option></select>
-                </div>
-                <div class="gb-stats-row">
-                    <span class="gb-count" id="gb-count-text">0 queries</span>
-                    <button class="gb-add-btn" onclick="openSaGuideAddModal()">➕ Add New Query</button>
-                </div>
-                <div class="gb-list" id="gb-list"></div>
+            <div class="gb-stats-row">
+                <span class="gb-count" id="gb-count-text">0 queries</span>
+                <button class="gb-add-btn" onclick="openSaGuideAddModal()">➕ Add New Query</button>
             </div>
-            <div id="gb-feedback-panel" style="display:none;">
-                <p style="font-size:0.8rem; color:var(--grey); margin:0 0 14px;">Feedback submitted by Admins and Students about the app or website itself, from every library, newest first.</p>
-                <div class="gb-stats-row">
-                    <span class="gb-count" id="gb-feedback-count-text">0 feedback entries</span>
-                </div>
-                <div class="gb-list" id="gb-feedback-list"></div>
-            </div>
+            <div class="gb-list" id="gb-list"></div>
         </div>
     </div>
 </div>
@@ -5795,55 +5865,108 @@ function openSaGuideBook(){
     document.getElementById('gb-search-input').value = '';
     gbPopulateCategoryFilter();
     gbRender();
-    gbSwitchPageTab('guide');
-    updateGbFeedbackDot();
 }
 function closeSaGuideBook(){
     document.getElementById('sa-guidebook-page').classList.remove('open');
 }
-function gbSwitchPageTab(tab){
-    const isGuide = tab === 'guide';
-    document.getElementById('gb-guide-panel').style.display = isGuide ? 'block' : 'none';
-    document.getElementById('gb-feedback-panel').style.display = isGuide ? 'none' : 'block';
-    document.getElementById('gb-tab-btn-guide').style.borderBottomColor = isGuide ? 'var(--primary)' : 'transparent';
-    document.getElementById('gb-tab-btn-guide').style.color = isGuide ? 'var(--primary)' : 'var(--grey)';
-    document.getElementById('gb-tab-btn-feedback').style.borderBottomColor = isGuide ? 'transparent' : 'var(--primary)';
-    document.getElementById('gb-tab-btn-feedback').style.color = isGuide ? 'var(--grey)' : 'var(--primary)';
-    document.getElementById('gb-page-title').innerText = isGuide ? '📖 Query Guide Book' : '💬 App / Website Feedback';
-    document.getElementById('gb-page-subtitle').innerText = isGuide
-        ? "Every query's ID, keywords, problem, and step-by-step resolution — all in one place"
-        : 'Feedback submitted by Admins and Students, from every library, about the app or website itself';
-    if (!isGuide) saRenderAppFeedback();
-}
+
+// ===== APP / WEBSITE FEEDBACK (standalone page — separate from the Query Guide Book) =====
 function saGetAppFeedback(){
     try { return JSON.parse(localStorage.getItem('Samarthak_AppFeedback') || '[]'); } catch(e) { return []; }
 }
+function saSaveAppFeedback(list){ localStorage.setItem('Samarthak_AppFeedback', JSON.stringify(list)); }
+function saStarsText(n){ n = n || 0; return '★'.repeat(n) + '☆'.repeat(5 - n); }
 function updateGbFeedbackDot(){
-    const has = saGetAppFeedback().length > 0;
-    const dot = document.getElementById('gb-feedback-notif-dot');
-    if (dot) dot.style.display = has ? 'block' : 'none';
-    const topDot = document.getElementById('sa-guidebook-topbtn-dot');
-    if (topDot) topDot.style.display = has ? 'block' : 'none';
+    const dot = document.getElementById('sa-feedback-topbtn-dot');
+    if (dot) dot.style.display = saGetAppFeedback().length ? 'block' : 'none';
+}
+let _saFeedbackLiveInterval = null;
+function openSaFeedbackPage(){
+    document.getElementById('sa-feedback-page').classList.add('open');
+    saRenderAppFeedback();
+    // Live-refresh while this page is open, so a feedback submitted elsewhere while the Super
+    // Admin is looking at this page shows up on its own — no page refresh needed.
+    if (_saFeedbackLiveInterval) clearInterval(_saFeedbackLiveInterval);
+    _saFeedbackLiveInterval = setInterval(saRenderAppFeedback, 3000);
+}
+function closeSaFeedbackPage(){
+    document.getElementById('sa-feedback-page').classList.remove('open');
+    if (_saFeedbackLiveInterval) { clearInterval(_saFeedbackLiveInterval); _saFeedbackLiveInterval = null; }
 }
 function saRenderAppFeedback(){
     const list = saGetAppFeedback().slice().reverse();
-    document.getElementById('gb-feedback-count-text').innerText = list.length + ' feedback ' + (list.length === 1 ? 'entry' : 'entries');
-    const host = document.getElementById('gb-feedback-list');
+    document.getElementById('sa-feedback-count-text').innerText = list.length + ' feedback ' + (list.length === 1 ? 'entry' : 'entries');
+    updateGbFeedbackDot();
+    const host = document.getElementById('sa-feedback-list');
     if (!list.length) { host.innerHTML = '<p style="text-align:center; color:var(--grey); font-size:0.85rem; padding:30px 0;">No feedback submitted yet.</p>'; return; }
     host.innerHTML = list.map(f => {
         const d = new Date(f.date);
         const dateText = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) + ', ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
-        const roleBadge = f.role === 'Student'
-            ? `<span class="badge" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;">Student${f.regNo ? ' · ' + f.regNo : ''}</span>`
-            : `<span class="badge" style="background:#fffbeb;color:#92400e;border:1px solid #fde68a;">Admin${f.adminId ? ' · ' + f.adminId : ''}</span>`;
-        return `<div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
-                <div><strong>${f.name}</strong> ${roleBadge}${f.libName ? ' <span style="font-size:0.72rem; color:var(--grey);">(' + f.libName + ')</span>' : ''}</div>
-                <div style="font-size:0.7rem; color:var(--grey); white-space:nowrap;">${dateText}</div>
+        let roleBadge, extraLine, roleClass;
+        if (f.role === 'Student') {
+            roleClass = 'role-student';
+            roleBadge = `<span class="badge" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;">Student</span>`;
+            extraLine = `Reg No: ${f.regNo || '—'}${f.libName ? ' · ' + f.libName : ''}`;
+        } else if (f.role === 'Admin') {
+            roleClass = 'role-admin';
+            roleBadge = `<span class="badge" style="background:#fffbeb;color:#92400e;border:1px solid #fde68a;">Admin</span>`;
+            extraLine = `Admin ID: ${f.adminId || '—'}${f.libName ? ' · ' + f.libName : ''}`;
+        } else {
+            roleClass = 'role-outsider';
+            roleBadge = `<span class="badge" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;">Outsider</span>`;
+            extraLine = `IP Address: ${f.ipAddress || '—'}`;
+        }
+        const replyHtml = f.reply
+            ? `<div class="fb-reply-bubble"><strong>💬 Your reply:</strong><br>${f.reply.text}</div>`
+            : `<div class="fb-reply-pending">⏳ No reply sent yet</div>`;
+        const initial = (f.name || '?').trim().charAt(0).toUpperCase();
+        return `<div class="fb-card ${roleClass}">
+            <div class="fb-card-top">
+                <div class="fb-avatar">${initial}</div>
+                <div class="meta">
+                    <div class="nm">${f.name} ${roleBadge}</div>
+                    <div class="sub">${extraLine}</div>
+                </div>
+                <div class="dt">${dateText}</div>
             </div>
-            <div style="font-size:0.82rem; color:var(--dark); line-height:1.5; white-space:pre-wrap;">${f.message}</div>
+            <div class="fb-stars-line">${saStarsText(f.rating)}</div>
+            <div class="fb-msg">${f.message}</div>
+            ${replyHtml}
+            <div class="fb-actions">
+                <button onclick="openSaFeedbackReplyModal('${f.id}')">${f.reply ? '✏️ Edit Reply' : '💬 Reply'}</button>
+                <button class="danger" onclick="saDeleteFeedback('${f.id}')">🗑 Delete</button>
+
+            </div>
         </div>`;
     }).join('');
+}
+let _saFeedbackReplyTargetId = null;
+function openSaFeedbackReplyModal(feedbackId){
+    _saFeedbackReplyTargetId = feedbackId;
+    const entry = saGetAppFeedback().find(f => f.id === feedbackId);
+    document.getElementById('sa-feedback-reply-text').value = (entry && entry.reply) ? entry.reply.text : '';
+    document.getElementById('sa-feedback-reply-modal').classList.add('open');
+}
+function closeSaFeedbackReplyModal(){
+    document.getElementById('sa-feedback-reply-modal').classList.remove('open');
+    _saFeedbackReplyTargetId = null;
+}
+function saSubmitFeedbackReply(){
+    const text = document.getElementById('sa-feedback-reply-text').value.trim();
+    if (!text) { alert('Please write a reply before sending.'); return; }
+    const list = saGetAppFeedback();
+    const entry = list.find(f => f.id === _saFeedbackReplyTargetId);
+    if (!entry) { closeSaFeedbackReplyModal(); return; }
+    entry.reply = { text, repliedAt: new Date().toISOString() };
+    saSaveAppFeedback(list);
+    closeSaFeedbackReplyModal();
+    saRenderAppFeedback();
+}
+function saDeleteFeedback(feedbackId){
+    if (!confirm('Delete this feedback permanently? This cannot be undone.')) return;
+    const list = saGetAppFeedback().filter(f => f.id !== feedbackId);
+    saSaveAppFeedback(list);
+    saRenderAppFeedback();
 }
 
 function gbMatchesQuery(entry, q){
