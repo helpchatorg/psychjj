@@ -1464,10 +1464,15 @@
                 to the smallest detail. The library goes back to a completely blank state, exactly like
                 a brand-new admin.
             </p>
+            <p style="font-size:0.78rem; color:var(--grey); margin:0 0 10px; line-height:1.5;">
+                It will also clear the <strong>Password Set by Admin</strong> — this admin will go back
+                to "Pending First Login" and must log in again with the Default Password below and set
+                a fresh password, just like a brand-new admin.
+            </p>
             <p style="font-size:0.78rem; color:var(--grey); margin:0 0 14px; line-height:1.5;">
-                <strong>Not affected:</strong> the admin's login ID &amp; password, its Demo status and
-                Demo Access Timing window, and the data of every other admin — only this one demo
-                admin's data is touched.
+                <strong>Not affected:</strong> the admin's login ID and Default Password, its Demo status
+                and Demo Access Timing window, and the data of every other admin — only this one demo
+                admin is touched.
             </p>
             <div class="input-group">
                 <label>Type the Admin ID to confirm</label>
@@ -5190,12 +5195,14 @@ function clearSaAdminDemoExpiry(){
 
 // ===== Reset Demo Account Data — wipes ONLY the one demo admin's own library record
 // (Samarthak_DB_<adminId>: students, tickets, waiting list, attendance, wallet, export/
-// restore history, everything). Every other admin's Samarthak_DB_<id> key is left
-// completely untouched, and this admin's login/demo-timing/status settings are also left
-// untouched — only its DATA resets, back to the same blank state a brand-new admin starts
-// with (a fresh admin has no Samarthak_DB_ key at all until first login, so removing the
-// key reproduces that exact starting state). Gated so it only ever fires for an admin
-// currently marked isDemo, even if called directly. =====
+// restore history, everything) AND clears its entry in the separate Admin-Passwords map
+// (Samarthak_AdminPasswords), so "Password Set by Admin" also goes back to "Pending First
+// Login" — the admin must log in again with the Default Password and set a fresh one.
+// Every other admin's Samarthak_DB_<id> key and password entry are left completely
+// untouched, and this admin's login ID, Default Password, demo-timing window and status
+// are also left untouched — only its DATA and self-chosen password reset, back to the
+// same blank state a brand-new admin starts with. Gated so it only ever fires for an
+// admin currently marked isDemo, even if called directly. =====
 let _saDemoResetTargetId = null;
 function openSaDemoResetModal(adminId){
     const admin = saGetAllAdmins().find(a => a.id === adminId);
@@ -5222,10 +5229,17 @@ function confirmSaDemoResetData(){
     if (!admin || !admin.isDemo || admin.discontinued) { showErr('This admin is no longer a demo account — reset is only available for demo accounts.'); return; }
     if (typed !== id) { showErr('Admin ID does not match. Type it exactly to confirm this cannot be undone.'); return; }
 
-    localStorage.removeItem(DB_KEY_PREFIX + id); // only this one admin's data — nothing else
+    localStorage.removeItem(DB_KEY_PREFIX + id); // only this one admin's library data — nothing else
+
+    // Also clear the self-chosen password entry, so "Password Set by Admin" reverts to
+    // "Pending First Login" too — only this one admin's entry is removed from the map.
+    const customPasswords = saReadAdminPasswordsSet();
+    delete customPasswords[id];
+    localStorage.setItem(ADMIN_PASSWORDS_KEY, JSON.stringify(customPasswords));
+
     closeSaDemoResetModal();
     saRefreshAllPanels();
-    alert('✅ All data for demo Admin ' + id + ' has been reset. This admin\'s login and demo-timing settings are unchanged — only its data was wiped.');
+    alert('✅ All data for demo Admin ' + id + ' has been reset, and its self-chosen password has been cleared (back to Pending First Login). Its login ID, Default Password and demo-timing settings are unchanged.');
 }
 
 function checkSaCpPwdRules(){
