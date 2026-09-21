@@ -356,14 +356,14 @@
     .pass-wrapper{position:relative;}
     .toggle-pass{position:absolute;right:14px;top:40px;cursor:pointer;font-size:0.7rem;color:var(--primary);font-weight:800;letter-spacing:.5px;background:var(--primary-light);padding:2px 8px;border-radius:20px;}
 
-    #sa-security-code-modal, #sa-forgot-password-modal, #sa-change-password-modal, #sa-admin-demo-modal, #sa-workinghours-modal {
+    #sa-security-code-modal, #sa-forgot-password-modal, #sa-change-password-modal, #sa-admin-demo-modal, #sa-workinghours-modal, #sa-demo-reset-modal {
         display:none; position:fixed; top:0; left:0; width:100%; height:100%;
         background:rgba(15,23,42,0.55); backdrop-filter:blur(6px);
         z-index:8500; padding:20px; box-sizing:border-box;
         align-items:center; justify-content:center; overflow-y:auto;
         -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     }
-    #sa-security-code-modal.open, #sa-forgot-password-modal.open, #sa-change-password-modal.open, #sa-admin-demo-modal.open, #sa-workinghours-modal.open { display:flex; }
+    #sa-security-code-modal.open, #sa-forgot-password-modal.open, #sa-change-password-modal.open, #sa-admin-demo-modal.open, #sa-workinghours-modal.open, #sa-demo-reset-modal.open { display:flex; }
 
     /* Modern pill-style day-of-week toggles (Working Hours settings) */
     .day-chip-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
@@ -1443,6 +1443,42 @@
     </div>
 </div>
 
+<!-- ===== RESET DEMO ACCOUNT DATA MODAL (per Admin account, opened from that admin's ⚙️ Setting)
+     Wipes ONLY this one demo admin's own library data (Samarthak_DB_<adminId>) — students,
+     tickets, waiting list, attendance, wallet, export/restore history, everything under that
+     one key. No other admin (demo or not) is touched, and this admin's login credentials,
+     demo-timing window, and account status are left exactly as they are — only the DATA
+     resets, back to the same blank state a brand-new admin starts with. Requires typing the
+     exact Admin ID to confirm, since this cannot be undone. ===== -->
+<div id="sa-demo-reset-modal">
+    <div class="cp-modal-card">
+        <div class="cp-modal-header">
+            <h3>🔄 Reset Demo Account Data</h3>
+            <button class="cp-close-btn" onclick="closeSaDemoResetModal()">✕ Close</button>
+        </div>
+        <div class="cp-modal-body">
+            <p style="font-size:0.78rem; color:var(--grey); margin:0 0 10px; line-height:1.5;">
+                This will permanently erase <strong>all library data</strong> stored for demo Admin
+                <strong id="sa-demo-reset-id" class="mono"></strong> — every student, ticket, waiting-list
+                entry, attendance record, wallet balance/history and export/restore history, right down
+                to the smallest detail. The library goes back to a completely blank state, exactly like
+                a brand-new admin.
+            </p>
+            <p style="font-size:0.78rem; color:var(--grey); margin:0 0 14px; line-height:1.5;">
+                <strong>Not affected:</strong> the admin's login ID &amp; password, its Demo status and
+                Demo Access Timing window, and the data of every other admin — only this one demo
+                admin's data is touched.
+            </p>
+            <div class="input-group">
+                <label>Type the Admin ID to confirm</label>
+                <input type="text" id="sa-demo-reset-confirm-input" placeholder="Type Admin ID exactly">
+            </div>
+            <div id="sa-err-demo-reset-general" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px; border-radius:8px; font-size:0.8rem; font-weight:800; margin-bottom:12px; text-align:center;"></div>
+            <button onclick="confirmSaDemoResetData()" style="background:#dc2626; color:#fff; width:100%; padding:12px;">🔄 Permanently Reset This Admin's Data</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ===== Super Admin credentials (change these for production use) =====
 const SUPER_ADMIN_ACCOUNTS = [ ["SUPERADMIN", "Samarthak@Dev2026"] ];
@@ -2095,6 +2131,11 @@ function saRenderAdminsPanel(){
         const demoTimingBtn = (a.isDemo && !a.discontinued)
             ? `<button class="sa-mini-btn" style="background:#fffbeb;border-color:#f59e0b;color:#92400e;" onclick="openSaAdminDemoModal('${a.id}')">⏳ Demo Account Timing</button>`
             : '';
+        // Reset button only ever appears for an admin currently marked as a demo account —
+        // it wipes ONLY that one admin's own library data (Samarthak_DB_<id>), never anyone else's.
+        const demoResetBtn = (a.isDemo && !a.discontinued)
+            ? `<button class="sa-mini-btn" style="background:#fef2f2;border-color:#fecaca;color:#dc2626;" onclick="openSaDemoResetModal('${a.id}')">🔄 Reset Data</button>`
+            : '';
         const settingBtn = a.discontinued ? ''
             : `<div class="sa-setting-wrap">
                 <button class="sa-mini-btn sa-mini-btn-setting" onclick="saToggleAdminSetting(event, '${a.id}')">⚙️ Setting</button>
@@ -2107,7 +2148,7 @@ function saRenderAdminsPanel(){
                         <div class="l">Password Set by Admin</div>
                         ${passRowHtml}
                     </div>
-                    <div class="sa-setting-actions">${blockBtn}${discontinueBtn}${ticketBlockBtn}${demoTimingBtn}</div>
+                    <div class="sa-setting-actions">${blockBtn}${discontinueBtn}${ticketBlockBtn}${demoTimingBtn}${demoResetBtn}</div>
                 </div>
             </div>`;
         // Export & Backup is always available — even for a discontinued admin, since
@@ -5145,6 +5186,46 @@ function clearSaAdminDemoExpiry(){
     delete expiries[_saAdminDemoTargetId];
     localStorage.setItem(SA_ADMIN_DEMO_KEY, JSON.stringify(expiries));
     openSaAdminDemoModal(_saAdminDemoTargetId);
+}
+
+// ===== Reset Demo Account Data — wipes ONLY the one demo admin's own library record
+// (Samarthak_DB_<adminId>: students, tickets, waiting list, attendance, wallet, export/
+// restore history, everything). Every other admin's Samarthak_DB_<id> key is left
+// completely untouched, and this admin's login/demo-timing/status settings are also left
+// untouched — only its DATA resets, back to the same blank state a brand-new admin starts
+// with (a fresh admin has no Samarthak_DB_ key at all until first login, so removing the
+// key reproduces that exact starting state). Gated so it only ever fires for an admin
+// currently marked isDemo, even if called directly. =====
+let _saDemoResetTargetId = null;
+function openSaDemoResetModal(adminId){
+    const admin = saGetAllAdmins().find(a => a.id === adminId);
+    if (!admin || !admin.isDemo || admin.discontinued) return; // safety: demo-only, never a normal admin
+    document.querySelectorAll('.sa-setting-dropdown.open').forEach(el => el.classList.remove('open'));
+    _saDemoResetTargetId = adminId;
+    document.getElementById('sa-demo-reset-id').textContent = adminId;
+    document.getElementById('sa-demo-reset-confirm-input').value = '';
+    hideErrEl('sa-err-demo-reset-general');
+    document.getElementById('sa-demo-reset-modal').classList.add('open');
+}
+function closeSaDemoResetModal(){
+    document.getElementById('sa-demo-reset-modal').classList.remove('open');
+    _saDemoResetTargetId = null;
+}
+function confirmSaDemoResetData(){
+    hideErrEl('sa-err-demo-reset-general');
+    const id = _saDemoResetTargetId;
+    const typed = document.getElementById('sa-demo-reset-confirm-input').value.trim();
+    const showErr = msg => { const el = document.getElementById('sa-err-demo-reset-general'); el.innerText = msg; el.style.display = 'block'; };
+
+    if (!id) { showErr('Something went wrong — please reopen this from the admin\'s Setting menu.'); return; }
+    const admin = saGetAllAdmins().find(a => a.id === id);
+    if (!admin || !admin.isDemo || admin.discontinued) { showErr('This admin is no longer a demo account — reset is only available for demo accounts.'); return; }
+    if (typed !== id) { showErr('Admin ID does not match. Type it exactly to confirm this cannot be undone.'); return; }
+
+    localStorage.removeItem(DB_KEY_PREFIX + id); // only this one admin's data — nothing else
+    closeSaDemoResetModal();
+    saRefreshAllPanels();
+    alert('✅ All data for demo Admin ' + id + ' has been reset. This admin\'s login and demo-timing settings are unchanged — only its data was wiped.');
 }
 
 function checkSaCpPwdRules(){
